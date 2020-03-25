@@ -5,7 +5,7 @@ PID_FILE=/omd/sites/$(whoami)/local/lib/tg_notify/tg_runner.pid
 if [ -f "$PID_FILE" ]; then
   ps $(cat $PID_FILE)
   
-  if [ $? != 0 ]; then
+  if [ $? == 0 ]; then
     exit
   fi
 fi
