@@ -9,6 +9,15 @@ if [ ! -d "/omd/sites/$SITE" ]; then
   exit 2
 fi
 
+if [ ! -d "/omd/sites/$SITE/local/etc" ]; then
+  mkdir -p /omd/sites/$SITE/local/etc
+  cp $DIR/local/etc/tg.ini /omd/sites/$SITE/local/etc/tg.ini
+fi
+
+if [ ! -d "/omd/sites/$SITE/local/lib/tg_notify" ]; then
+  mkdir -p /omd/sites/$SITE/local/lib/tg_notify
+  chown $SITE:$SITE /omd/sites/$SITE/local/lib/tg_notify
+fi
 
 cp $DIR/local/bin/tg_admin /omd/sites/$SITE/local/bin/tg_admin
 cp $DIR/local/bin/tg_callback /omd/sites/$SITE/local/bin/tg_callback
