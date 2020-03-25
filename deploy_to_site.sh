@@ -22,16 +22,16 @@ fi
 cp $DIR/local/bin/tg_admin /omd/sites/$SITE/local/bin/tg_admin
 cp $DIR/local/bin/tg_callback /omd/sites/$SITE/local/bin/tg_callback
 cp $DIR/local/bin/tg_runner /omd/sites/$SITE/local/bin/tg_runner
-cp $DIR/local/share/check_mk/notifications/tg_notification_with_callback.py /omd/sites/$SITE/share/check_mk/notifications/tg_notification_with_callback.py
+cp $DIR/local/share/check_mk/notifications/tg_notification_with_callback.py /omd/sites/$SITE/local/share/check_mk/notifications/tg_notification_with_callback.py
 
 chown $SITE:$SITE \
   /omd/sites/$SITE/local/bin/tg_admin \
   /omd/sites/$SITE/local/bin/tg_callback \
   /omd/sites/$SITE/local/bin/tg_runner \
-  /omd/sites/$SITE/share/check_mk/notifications/tg_notification_with_callback.py
+  /omd/sites/$SITE/local/share/check_mk/notifications/tg_notification_with_callback.py
 
 chmod +x \
   /omd/sites/$SITE/local/bin/tg_admin \
   /omd/sites/$SITE/local/bin/tg_callback \
   /omd/sites/$SITE/local/bin/tg_runner \
-  /omd/sites/$SITE/share/check_mk/notifications/tg_notification_with_callback.py
+  /omd/sites/$SITE/local/share/check_mk/notifications/tg_notification_with_callback.py
