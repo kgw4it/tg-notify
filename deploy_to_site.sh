@@ -2,7 +2,7 @@
 
 SITE=$1
 
-if [ ! -d "/omd/sites/$SIT" ]; then
+if [ ! -d "/omd/sites/$SITE" ]; then
   echo "Site '$SITE' does not exist. Aborting."
   exit 2
 fi
