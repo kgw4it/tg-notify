@@ -48,7 +48,7 @@ class TGnotification:
         config.read(self.path + "/local/etc/tg.ini")
 
         # Define global parameters
-        self.tg_url = config.get('Telegram', 'url') + config.get('Telegram', 'token') + "/"
+        self.tg_url = config.get('Telegram', 'url') + "bot" + config.get('Telegram', 'token') + "/"
         self.db_path = self.path + "/" + config.get('Database', 'path')
         self.db_file = config.get('Database', 'file')
 
