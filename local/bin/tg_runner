@@ -1,5 +1,16 @@
 #!/bin/bash
 
-tg_admin --collect-callbacks
-sleep 5
-tg_callback
+PID_FILE=/omd/sites/$(whoami)/local/lib/tg_notify/tg_runner.pid
+
+if [ -f "$PID_FILE" ]; then
+  ps $(cat $PID_FILE)
+  
+  if [ $? != 0 ]; then
+    exit
+  fi
+fi
+
+for i in {1..60}; do
+  tg_callback
+  sleep 5
+done
