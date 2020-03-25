@@ -232,12 +232,17 @@ class TGadmin:
             # Go trough the messages
             for m in msg['result']:
                 # if in message open show informations
-                if "open" in m['message']['text']:
+                if 'open' in m['message']['text'] and 'from' in m['message']:
                     print "----------------------------------------------------------------"
                     print "First Name: %s" % m['message']['from']['first_name']
-                    print "Last Name: %s" % m['message']['from']['last_name']
+                    if 'last_name' in m['message']['from']:
+                        print "Last Name: %s" % m['message']['from']['last_name']
+                    if 'username' in m['message']['from']:
+                        print "Last Name: %s" % m['message']['from']['username']
                     print "CHAT ID: %s" % m['message']['from']['id']
                     print "----------------------------------------------------------------"
+                else:
+                    print "No VALID USER: %s" % json.dumps(m['message'])
         else:
             print "No messages in queue"
 
