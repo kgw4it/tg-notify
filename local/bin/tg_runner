@@ -10,6 +10,8 @@ if [ -f "$PID_FILE" ]; then
   fi
 fi
 
+echo $$ > $PID_FILE
+
 for i in {1..60}; do
   tg_callback
   sleep 5
