@@ -367,7 +367,7 @@ class TGadmin:
         # Steps
 
         # Step 1: Create callback collector & execute the callback agent
-        cb_collect_cb_agent = "* * * * * . $OMD_ROOT/local/bin/tg_callback >/dev/null 2>&1"
+        cb_collect_cb_agent = "* * * * * . $OMD_ROOT/local/bin/tg_runner >/dev/null 2>&1"
 
         with open(cron_path + 'tg_collect_and_callback_agent', 'w+') as f:
             f.write(cb_collect_cb_agent + '\n')
