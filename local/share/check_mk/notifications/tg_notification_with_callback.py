@@ -313,7 +313,7 @@ class TGnotification:
                             "media": ("attach://photo%d" % counter),
                             "caption": ("%s - Graph #%d" % (os.environ['NOTIFY_HOSTNAME'], counter))
                         })
-                        filesdata["photo%d" % source] = ("%s-%d.png" % (os.environ['NOTIFY_HOSTNAME'], counter), graph_png, 'image/png')
+                        filesdata["photo%d" % counter] = ("%s-%d.png" % (os.environ['NOTIFY_HOSTNAME'], counter), graph_png, 'image/png')
                         counter += 1
 
                     postdata = {
