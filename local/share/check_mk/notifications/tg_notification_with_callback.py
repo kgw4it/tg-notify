@@ -182,6 +182,10 @@ class TGnotification:
             return map(base64.b64decode, base64_strings)
         except Exception:
             return []
+    def chunks(lst, n):
+        """Yield successive n-sized chunks from lst."""
+        for i in range(0, len(lst), n):
+            yield lst[i:i + n]
         
     def notify(self):
 
@@ -297,30 +301,34 @@ class TGnotification:
         self.L.info("Message: %s", message)
         
         if graph_data is not None:
-            if len(graph_data) > 1:
-                filesdata = {}
-                media = []
-                for source, graph_png in enumerate(graph_data):
-                    media.append({
-                        "type": "photo",
-                        "media": ("attach://photo%d" % source),
-                        "caption": ("%s - Graph #%d" % (os.environ['NOTIFY_HOSTNAME'], source))
-                    })
-                    filesdata["photo%d" % source] = ("%s-%d.png" % (os.environ['NOTIFY_HOSTNAME'], source), graph_png, 'image/png')
+            counter = 0
+            for graphdata_chunk in chunks(graph_data, 10):
+                if len(graphdata_chunk) > 1:
+                    filesdata = {}
+                    media = []
+                    for source, graph_png in enumerate(graphdata_chunk):
+                        media.append({
+                            "type": "photo",
+                            "media": ("attach://photo%d" % counter),
+                            "caption": ("%s - Graph #%d" % (os.environ['NOTIFY_HOSTNAME'], counter))
+                        })
+                        filesdata["photo%d" % source] = ("%s-%d.png" % (os.environ['NOTIFY_HOSTNAME'], counter), graph_png, 'image/png')
+                        counter++
 
-                postdata = {
-                    "chat_id": chat_id,
-                    "media": json.dumps(media),
-                    "disable_notification": 1
-                }
-                self.tg_handler_post("sendMediaGroup", postdata, filesdata)
-            else:
-                self.tg_handler_post("sendPhoto", {
-                    "chat_id": chat_id,
-                    "caption": "%s Graph #0" % (os.environ['NOTIFY_HOSTNAME'])
-                }, {
-                    "photo": ("%s-%d.png" % (os.environ['NOTIFY_HOSTNAME'], 0), graph_data[0], 'image/png'),
-                })
+                    postdata = {
+                        "chat_id": chat_id,
+                        "media": json.dumps(media),
+                        "disable_notification": 1
+                    }
+                    self.tg_handler_post("sendMediaGroup", postdata, filesdata)
+                else:
+                    self.tg_handler_post("sendPhoto", {
+                        "chat_id": chat_id,
+                        "caption": "%s Graph #%d" % (os.environ['NOTIFY_HOSTNAME'], counter)
+                    }, {
+                        "photo": ("%s-%d.png" % (os.environ['NOTIFY_HOSTNAME'], counter), graphdata_chunk[0], 'image/png'),
+                    })
+                    counter++
 
         if notification_type == "PROBLEM":
             self.L.debug("Notification Type is PROBLEM")
