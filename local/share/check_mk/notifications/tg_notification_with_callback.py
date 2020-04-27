@@ -309,7 +309,7 @@ class TGnotification:
                     "media": ("attach://photo%d" % source),
                     "caption": ("%s - Graph #%d" % (os.environ['NOTIFY_HOSTNAME'], source))
                 })
-                filesdata["photo" + source] = ("%s-%s.png" % (os.environ['NOTIFY_HOSTNAME'], source), graph_png, 'image/png'),
+                filesdata["photo" + source] = ("%s-%d.png" % (os.environ['NOTIFY_HOSTNAME'], source), graph_png, 'image/png'),
             
             self.tg_handler_post("sendMediaGroup", postdata, filesdata)
 
