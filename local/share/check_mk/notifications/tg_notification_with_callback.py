@@ -91,7 +91,7 @@ class TGnotification:
         
     def tg_handler_post(self, command, postdata, files):
         try:
-            response = requests.post(self.tg_url + command, data=urllib.parse.urlencode(postdata), files=files)
+            response = requests.post(self.tg_url + command, data=urllib.urlencode(postdata), files=files)
             j = json.loads(response.content)
         except Exception as e:
             self.L.info("There was a problem with sending data to telegram: %s", str(e))
