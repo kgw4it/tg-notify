@@ -306,11 +306,11 @@ class TGnotification:
                         "media": ("attach://photo%d" % source),
                         "caption": ("%s - Graph #%d" % (os.environ['NOTIFY_HOSTNAME'], source))
                     })
-                    filesdata["photo%d" % source] = ("%s-%d.png" % (os.environ['NOTIFY_HOSTNAME'], source), graph_png, 'image/png'),
+                    filesdata["photo%d" % source] = ("%s-%d.png" % (os.environ['NOTIFY_HOSTNAME'], source), graph_png, 'image/png')
 
                 postdata = {
                     "chat_id": chat_id,
-                    "media": str(json.dumps(media)),
+                    "media": json.dumps(media),
                     "disable_notification": 1
                 }
                 self.tg_handler_post("sendMediaGroup", postdata, filesdata)
