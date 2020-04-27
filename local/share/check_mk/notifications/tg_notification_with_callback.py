@@ -182,7 +182,8 @@ class TGnotification:
             return map(base64.b64decode, base64_strings)
         except Exception:
             return []
-    def chunks(lst, n):
+
+    def chunks(self, lst, n):
         """Yield successive n-sized chunks from lst."""
         for i in range(0, len(lst), n):
             yield lst[i:i + n]
