@@ -297,21 +297,30 @@ class TGnotification:
         self.L.info("Message: %s", message)
         
         if graph_data is not None:
-            postdata = {
-                "chat_id": chat_id,
-                "media": [],
-                "disable_notification": 1
-            }
-            filesdata = {}
-            for source, graph_png in enumerate(graph_data):
-                postdata["media"].append({
-                    "type": "photo",
-                    "media": ("attach://photo%d" % source),
-                    "caption": ("%s - Graph #%d" % (os.environ['NOTIFY_HOSTNAME'], source))
+            if len(graph_data) > 1:
+                filesdata = {}
+                media = []
+                for source, graph_png in enumerate(graph_data):
+                    media.append({
+                        "type": "photo",
+                        "media": ("attach://photo%d" % source),
+                        "caption": ("%s - Graph #%d" % (os.environ['NOTIFY_HOSTNAME'], source))
+                    })
+                    filesdata["photo%d" % source] = ("%s-%d.png" % (os.environ['NOTIFY_HOSTNAME'], source), graph_png, 'image/png'),
+
+                postdata = {
+                    "chat_id": chat_id,
+                    "media": json.dumps(media),
+                    "disable_notification": 1
+                }
+                self.tg_handler_post("sendMediaGroup", postdata, filesdata)
+            else:
+                self.tg_handler_post("sendPhoto", {
+                    "chat_id": chat_id,
+                    "caption": "%s Graph #0" % (os.environ['NOTIFY_HOSTNAME'])
+                }, {
+                    "photo": ("%s-%d.png" % (os.environ['NOTIFY_HOSTNAME'], 0), graph_data[0], 'image/png'),
                 })
-                filesdata["photo%d" % source] = ("%s-%d.png" % (os.environ['NOTIFY_HOSTNAME'], source), graph_png, 'image/png'),
-            
-            self.tg_handler_post("sendMediaGroup", postdata, filesdata)
 
         if notification_type == "PROBLEM":
             self.L.debug("Notification Type is PROBLEM")
