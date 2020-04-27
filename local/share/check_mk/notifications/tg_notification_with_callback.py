@@ -302,7 +302,7 @@ class TGnotification:
         
         if graph_data is not None:
             counter = 0
-            for graphdata_chunk in chunks(graph_data, 10):
+            for graphdata_chunk in self.chunks(graph_data, 10):
                 if len(graphdata_chunk) > 1:
                     filesdata = {}
                     media = []
