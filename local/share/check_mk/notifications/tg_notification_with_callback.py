@@ -25,12 +25,17 @@ import sqlite3
 import os
 import sys
 import urllib
+import urllib2
+import requests
 import json
 import random
 import string
 import time
 import logging
+import base64
+import subprocess
 
+import cmk.utils.site as site
 
 class TGnotification:
 
@@ -38,7 +43,7 @@ class TGnotification:
 
         # Check if we are in an OMD_ENVIRONMENT
         try:
-            self.path = os.environ.pop('OMD_ROOT')
+            self.path = os.environ['OMD_ROOT']
         except:
             sys.stderr.write("We are not in an OMD ENVIRONMENT, please go to OMD ROOT")
             sys.exit(2)
@@ -72,22 +77,112 @@ class TGnotification:
             handle = urllib.urlopen(self.tg_url + command)
             response = handle.read().strip()
             j = json.loads(response)
-
         except Exception:
             import traceback
             sys.stderr.write('generic exception: ' + traceback.format_exc())
             sys.exit(2)
 
         if j['ok'] is True:
-            self.L.info("Message successful send to telegram.")
+            self.L.info("Message successful sent to telegram.")
             return j
         else:
             self.L.info("There was a problem with sending message to telegram: %s", j)
+            return {}
+        
+    def tg_handler_post(self, command, postdata, files):
+        try:
+            response = requests.post(self.tg_url + command, data=postdata, files=files)
+            j = json.loads(response.content)
+        except Exception as e:
+            self.L.info("There was a problem with sending data to telegram: %s", str(e))
+            return
+
+        if j['ok'] is True:
+            self.L.info("Data successful sent to telegram.")
+            return j
+        else:
+            self.L.info("There was a problem with sending data to telegram: %s", j)
             return {}
 
     ####################################################################################################################
     # Create notification
     ####################################################################################################################
+    def get_graph(self, is_host):
+        if site.get_omd_config("CONFIG_CORE") == "cmc":
+            return self.get_cmc_graph(is_host)
+        else:
+            return self.get_pnp_graph(is_host)
+        
+    def fetch_pnp_data(self, params):
+        try:
+            # Autodetect the path in OMD environments
+            path = "%s/share/pnp4nagios/htdocs/index.php" % os.environ['OMD_ROOT'].encode('utf-8')
+            php_save_path = "-d session.save_path=%s/tmp/php/session" % os.environ['OMD_ROOT'].encode(
+                'utf-8')
+            env = {
+                'REMOTE_USER': "check-mk",
+                "SKIP_AUTHORIZATION": "1",
+            }
+        except:
+            return ''
+
+        if not os.path.exists(path):
+            return ''
+
+        return subprocess.check_output(["php", php_save_path, path, params], env=env)
+
+
+    def fetch_num_sources(self, is_host):
+        svc_desc = '_HOST_' if is_host else os.environ['NOTIFY_SERVICEDESC']
+        infos = self.fetch_pnp_data(
+            '/json?host=%s&srv=%s&view=0' %
+            (os.environ['NOTIFY_HOSTNAME'].encode('utf-8'), svc_desc.encode('utf-8')))
+        if not infos.startswith('[{'):
+            return 0
+
+        return infos.count('source=')
+
+
+    def fetch_graph(self, is_host, source, view=1):
+        svc_desc = '_HOST_' if is_host else os.environ['NOTIFY_SERVICEDESC']
+        graph = self.fetch_pnp_data(
+            '/image?host=%s&srv=%s&view=%d&source=%d' %
+            (os.environ['NOTIFY_HOSTNAME'].encode('utf-8'), svc_desc.encode('utf-8'), view, source))
+
+        if graph[:8] != '\x89PNG\r\n\x1a\n':
+            return None
+
+        return graph
+
+    def get_pnp_graph(self, is_host):
+        num_sources = self.fetch_num_sources(is_host)
+
+        graph_list = []
+        for source in range(0, num_sources):
+            content = self.fetch_graph(is_host, source)
+                
+            if content is None:
+                sys.stderr.write('Unable to fetch graph: %s\n' % e)
+                continue
+
+            graph_list.append(content)
+
+        return graph_list
+
+    def get_cmc_graph(self, is_host):
+        url = ("http://localhost:%d/%s/check_mk/ajax_graph_images.py?host=%s&service=%s" %
+           (site.get_apache_port(), os.environ["OMD_SITE"],
+            urllib.quote(os.environ['NOTIFY_HOSTNAME']),
+            urllib.quote("_HOST_" if is_host else os.environ['NOTIFY_SERVICEDESC'])))
+        
+        try:
+            handle = urllib.urlopen(url)
+            response = handle.read().strip()
+            base64_strings = json.loads(response)
+            return map(base64.b64decode, base64_strings)
+        except Exception:
+            return []
+        
     def notify(self):
 
         # Step 0: Build DB Connection
@@ -139,11 +234,14 @@ class TGnotification:
         # Step 3: Build notification
         max_len = 300
         message = os.environ['NOTIFY_HOSTNAME'] + " "
+        graph_data = None
 
         notification_type = os.environ["NOTIFY_NOTIFICATIONTYPE"]
 
         # Prepare Default information and Type PROBLEM, RECOVERY
         if os.environ['NOTIFY_WHAT'] == 'SERVICE':
+            graph_data = self.get_graph(False)
+            
             if notification_type in ["PROBLEM", "RECOVERY"]:
                 message += os.environ['NOTIFY_SERVICESTATE'][:2] + " "
                 avail_len = max_len - len(message)
@@ -154,6 +252,8 @@ class TGnotification:
                 message += os.environ['NOTIFY_SERVICEDESC']
 
         else:
+            graph_data = self.get_graph(True)
+            
             if notification_type in ["PROBLEM", "RECOVERY"]:
                 message += "is " + os.environ['NOTIFY_HOSTSTATE']
 
@@ -195,6 +295,15 @@ class TGnotification:
                            )
 
         self.L.info("Message: %s", message)
+        
+        if graph_data is not None:
+            for source, graph_png in enumerate(graph_data):
+                self.tg_handler_post("sendPhoto", {
+                    "chat_id": chat_id,
+                    "caption": "%s" % (os.environ['NOTIFY_HOSTNAME'])
+                }, {
+                    "photo": ("%s-%s.png" % (os.environ['NOTIFY_HOSTNAME'], source), graph_png, 'image/png'),
+                })
 
         if notification_type == "PROBLEM":
             self.L.debug("Notification Type is PROBLEM")
