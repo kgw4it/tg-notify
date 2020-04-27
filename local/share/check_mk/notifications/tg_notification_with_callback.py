@@ -313,7 +313,7 @@ class TGnotification:
                             "caption": ("%s - Graph #%d" % (os.environ['NOTIFY_HOSTNAME'], counter))
                         })
                         filesdata["photo%d" % source] = ("%s-%d.png" % (os.environ['NOTIFY_HOSTNAME'], counter), graph_png, 'image/png')
-                        counter++
+                        counter += 1
 
                     postdata = {
                         "chat_id": chat_id,
@@ -328,7 +328,7 @@ class TGnotification:
                     }, {
                         "photo": ("%s-%d.png" % (os.environ['NOTIFY_HOSTNAME'], counter), graphdata_chunk[0], 'image/png'),
                     })
-                    counter++
+                    counter += 1
 
         if notification_type == "PROBLEM":
             self.L.debug("Notification Type is PROBLEM")
