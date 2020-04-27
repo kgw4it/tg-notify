@@ -297,13 +297,21 @@ class TGnotification:
         self.L.info("Message: %s", message)
         
         if graph_data is not None:
+            postdata = {
+                "chat_id": chat_id,
+                "media": [],
+                "disable_notification": 1
+            }
+            filesdata = {}
             for source, graph_png in enumerate(graph_data):
-                self.tg_handler_post("sendPhoto", {
-                    "chat_id": chat_id,
-                    "caption": "%s" % (os.environ['NOTIFY_HOSTNAME'])
-                }, {
-                    "photo": ("%s-%s.png" % (os.environ['NOTIFY_HOSTNAME'], source), graph_png, 'image/png'),
+                postdata["media"].append({
+                    "type": "photo",
+                    "media": ("attach://photo%d" % source),
+                    "caption": ("%s - Graph #%d" % (os.environ['NOTIFY_HOSTNAME'], source))
                 })
+                filesdata["photo" + source] = ("%s-%s.png" % (os.environ['NOTIFY_HOSTNAME'], source), graph_png, 'image/png'),
+            
+            self.tg_handler_post("sendMediaGroup", postdata, filesdata)
 
         if notification_type == "PROBLEM":
             self.L.debug("Notification Type is PROBLEM")
