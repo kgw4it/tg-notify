@@ -232,7 +232,7 @@ class TGadmin:
             # Go trough the messages
             for m in msg['result']:
                 # if in message open show informations
-                if 'open' in m['message']['text'] and 'from' in m['message']:
+                if 'from' in m['message'] and 'text' in m['message'] and 'open' in m['message']['text']:
                     print "----------------------------------------------------------------"
                     print "First Name: %s" % m['message']['from']['first_name']
                     if 'last_name' in m['message']['from']:
