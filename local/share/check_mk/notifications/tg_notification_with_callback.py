@@ -292,8 +292,8 @@ class TGnotification:
         # markup fuer callbacks
         markup = json.dumps({'inline_keyboard': [
             [
-             {'text': 'Acknowledge', 'callback_data': '$$$CB$$$%s:ack' % callback_id },
-             {'text': 'Downtime for 24h', 'callback_data': '$$$CB$$$%s:down24h' % callback_id }
+             #{'text': 'Acknowledge', 'callback_data': '$$$CB$$$%s:ack' % callback_id },
+             #{'text': 'Downtime for 24h', 'callback_data': '$$$CB$$$%s:down24h' % callback_id }
             ]
                                                 ]
                             }
