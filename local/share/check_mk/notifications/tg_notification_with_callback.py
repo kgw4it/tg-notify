@@ -304,7 +304,7 @@ class TGnotification:
         if graph_data is not None:
             counter = 0
             # we only take at modt 3 graphs to not overload the chat
-            for graphdata_chunk in self.chunks(graph_data, 3)[0:1]:
+            for graphdata_chunk in list(self.chunks(graph_data, 3))[0:1]:
                 if len(graphdata_chunk) > 1:
                     filesdata = {}
                     media = []
